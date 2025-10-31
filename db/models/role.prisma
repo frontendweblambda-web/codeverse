@@ -1,0 +1,7 @@
+model Role{
+    id String @id default(cuid()) @map("role_id")
+    name String @unique
+    slug String @unique
+
+    @@map("roles")
+}
