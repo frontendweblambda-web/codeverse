@@ -1,0 +1,14 @@
+model TenantDB {
+  id        String   @id @default(uuid()) @map("tenant_db")
+  tenantId  String   @unique @map("tenant_id")
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: NoAction)
+  // connection / routing info (not actual credentials in repo)
+  dbHost    String?  @map("db_host")
+  dbName    String?  @map("db_name")
+  dbSchema  String?  @map("db_schema")
+  // Usage / last sync
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("tenants_db")
+}

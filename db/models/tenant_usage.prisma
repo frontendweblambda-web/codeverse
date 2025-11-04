@@ -1,0 +1,13 @@
+model TenantUsage {
+  id         String   @id @default(uuid()) @map("tenant_usage_id")
+  tenantId   String   @map("tenant_id")
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  metric     String // e.g. "projects", "storage_gb", "api_calls"
+  value      Float
+  periodFrom DateTime @map("period_form")
+  periodTo   DateTime @map("period_to")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([tenantId, metric])
+  @@map("tenant_usage")
+}

@@ -1,8 +1,8 @@
-import { config } from "dotenv";
+import "dotenv/config";
 import path from "path";
 import { defineConfig, env } from "prisma/config";
 
-config({ path: `.env.${process.env.NODE_ENV}` });
+console.log("env", process.env.NODE_ENV);
 export default defineConfig({
   schema: path.resolve("db"),
   migrations: {

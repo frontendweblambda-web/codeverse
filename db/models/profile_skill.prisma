@@ -1,0 +1,16 @@
+model ProfileSkill {
+  profileId   String      @map("profile_id")
+  skillId     String      @map("skill_id")
+  profile     Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  skill       Skill       @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  proficiency Proficiency @default(BEGINERS)
+
+  @@id([skillId, profileId])
+  @@map("profile_skills")
+}
+
+enum Proficiency {
+  BEGINERS
+  INTERMEDIATE
+  EXPERT
+}

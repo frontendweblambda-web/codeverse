@@ -1,0 +1,12 @@
+model Code {
+  id          String    @id @default(cuid()) @map("code_id")
+  language    String
+  code        String
+  postId      String    @unique @map("post_id")
+  post        Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+  title       String?
+  description String?
+
+  @@map("codes")
+}

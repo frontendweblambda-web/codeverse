@@ -1,0 +1,26 @@
+model Workspace {
+  id          String       @id @default(cuid()) @map("workspace_id")
+  name        String
+  slug        String       @unique @db.Citext //(string, unique for subdomain/workspace link)
+  description String?
+  industry    String? //(optional string)
+  metadata    Json?        @db.JsonB //(JSONB for AI tagging/usage patterns)
+  status      RecordStatus @default(ACTIVE)
+  tenantId    String
+  tenant      Tenant       @relation(fields: [tenantId], references: [id])
+  billingId   String?      @map("billing_id")
+  settings    Json?
+  invitations Invitation[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, slug]) // workspace slug unique per tenant
+  @@index([tenantId])
+  @@map("workspaces")
+}
+
+enum RecordStatus {
+  ACTIVE
+  DECACTIVE
+}

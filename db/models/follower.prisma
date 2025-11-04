@@ -1,0 +1,10 @@
+model Follow {
+  id          String @id @default(cuid()) @map("follow_id")
+  followerId  String @map("follower_id")
+  follower    User   @relation("user_followers", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String @map("following_id")
+  following   User   @relation("user_following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("followers")
+}

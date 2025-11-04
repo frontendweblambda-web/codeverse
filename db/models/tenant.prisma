@@ -1,0 +1,43 @@
+model Tenant {
+  id   String     @id @default(cuid()) @map("tenant_id")
+  name String
+  slug String     @unique
+  type TenantType @default(INDIVIDUAL)
+
+  logoUrl           String?
+  description       String?
+  website           String?
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt         DateTime?     @map("deleted_at")
+  ownerId           String        @unique @map("owner_id")
+  owner             User          @relation(fields: [ownerId], references: [id])
+  // Multi-tenant settings stored as JSON for flexibility
+  settings          Json? // { branding, ssoConfig, authPolicies, retention, dataResidency }
+  plan              PlanTier      @default(FREE)
+  billingCustomerId String? // payment provider id
+  trialExpiresAt    DateTime?
+  planExpiresAt     DateTime?
+  // Quotas and usage (for enforcement)
+  quota             Json? // e.g. { projects: 50, storageGb: 10 }
+  usage             TenantUsage[]
+
+  // mapping to a dedicated DB or schema for very large tenants (optional)
+  dbConfig    TenantDB?
+  invitations Invitation[]
+  workspaces  Workspace[]
+
+  @@map("tenants")
+}
+
+enum TenantType {
+  INDIVIDUAL
+  ORGANIZATION
+  TEAM
+}
+
+enum PlanTier {
+  FREE
+  PRO
+  ENTERPRISE
+}

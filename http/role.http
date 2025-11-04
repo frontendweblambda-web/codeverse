@@ -1,0 +1,10 @@
+### Get roles
+GET http://localhost:3000/api/v1/role
+
+### Add new role
+POST http://localhost:3000/api/v1/role
+Content-Type: application/json
+
+{
+    "name":"user"
+}
