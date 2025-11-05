@@ -16,7 +16,7 @@ export class CustomError extends Error {
       traceId: this.traceId,
       statusCode: this.statusCode,
       message: this.msg!,
-      errors: this.errors ? zodErrorFormat(this.errors) : undefined,
+      errors: this.errors ? (zodErrorFormat(this.errors) as any) : undefined,
     };
   }
 }

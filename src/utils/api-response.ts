@@ -8,6 +8,8 @@ type JsonBody<T> = {
   errors?: Array<{ field: string; code: string; message: string }> | ZodIssue[];
   statusCode?: number;
   traceId?: string;
+  accessToken?: string;
+  refreshToken?: string;
 };
 export default function ApiResponse<T>(obj: JsonBody<T>, init?: ResponseInit) {
   const { success = true, message = "OK" } = obj;

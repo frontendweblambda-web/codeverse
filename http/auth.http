@@ -1,0 +1,10 @@
+### Signup
+POST http://localhost:3000/api/v1/register
+Content-Type: application/json
+
+{
+    "name":"Pradeep Kumar1",
+    "email":"frontendweb.sk@gmail.com",
+    "password":"Admin$123@",
+    "mobile":"7291893481"
+}
