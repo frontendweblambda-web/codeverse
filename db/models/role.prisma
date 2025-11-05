@@ -2,11 +2,18 @@ model Role {
   id          String           @id @default(cuid()) @map("role_id")
   name        String           @unique
   slug        String           @unique
-  permissions RolePermission[]
-  users       UserRole[]
+  description String?
+  scope       RoleScope        @default(TENANT) // Tenant-level or Workspace-level
   createdAt   DateTime         @default(now()) @map("created_at")
   updatedAt   DateTime         @updatedAt @map("updated_at")
+  permissions RolePermission[]
+  users       UserRole[]
   Invitation  Invitation[]
 
   @@map("roles")
+}
+
+enum RoleScope {
+  TENANT
+  WORKSPACE
 }
