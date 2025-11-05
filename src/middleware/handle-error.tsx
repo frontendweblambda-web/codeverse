@@ -5,15 +5,15 @@ export function errorHandler(error: unknown, options?: ResponseInit) {
   let message = error instanceof Error ? error.message : "Something went wrong";
 
   if (error instanceof CustomError) {
-    return ApiResponse(
-      {
-        success: false,
-        message: error.message,
-        data: null,
-        errors: error.errors,
-      },
-      { status: error.statusCode, ...options }
-    );
+    const payload = {
+      success: false,
+      ...error.renderError(),
+    };
+
+    return ApiResponse(payload, {
+      status: error.statusCode,
+      ...options,
+    });
   }
 
   return ApiResponse(

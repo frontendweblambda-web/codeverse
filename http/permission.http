@@ -1,0 +1,21 @@
+### Get permission
+GET http://localhost:3000/api/v1/permission
+
+### Add new permission
+POST http://localhost:3000/api/v1/permission
+Content-Type: application/json
+
+{
+    "name":"cv:post:*"
+}
+
+
+### Update permission
+PUT http://localhost:3000/api/v1/role/permission
+Content-Type: application/json
+
+{
+    "name":"user"
+}
+
+

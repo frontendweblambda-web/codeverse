@@ -1,14 +1,11 @@
+import { zodErrorFormat } from "@/src/utils/format-error";
 import { ZodError } from "zod";
-import { ZodIssue } from "zod/v3";
 
 export class CustomError extends Error {
-  traceId?: string;
-  statusCode: number = 500;
+  traceId: string;
+  statusCode = 500;
 
-  constructor(
-    public msg?: string,
-    public errors?: ZodError | { [key: string]: string }
-  ) {
+  constructor(public msg?: string, public errors?: ZodError) {
     super(msg);
     this.traceId = crypto.randomUUID();
     Object.setPrototypeOf(this, CustomError.prototype);
@@ -16,10 +13,10 @@ export class CustomError extends Error {
 
   renderError(): IError {
     return {
+      traceId: this.traceId,
       statusCode: this.statusCode,
-      traceId: this.traceId!,
-      error: this.msg,
-      errors: this.errors,
+      message: this.msg!,
+      errors: this.errors ? zodErrorFormat(this.errors) : undefined,
     };
   }
 }
@@ -27,7 +24,6 @@ export class CustomError extends Error {
 export interface IError {
   statusCode: number;
   traceId: string;
-  path?: string;
-  error?: string;
-  errors?: ZodIssue[] | { [key: string]: string };
+  message: string;
+  errors?: Array<{ field: string; code: string; message: string }>;
 }

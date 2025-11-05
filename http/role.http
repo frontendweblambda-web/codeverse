@@ -8,3 +8,12 @@ Content-Type: application/json
 {
     "name":"user"
 }
+
+
+### Update role
+PUT http://localhost:3000/api/v1/role/users
+Content-Type: application/json
+
+{
+    "name":"user"
+}
