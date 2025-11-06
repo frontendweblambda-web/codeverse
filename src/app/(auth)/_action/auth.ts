@@ -42,7 +42,7 @@ export async function login(formState: FormState<User>, formData: FormData) {
 			where: { email },
 			include: {
 				tenant: true,
-				role: {
+				roles: {
 					include: {
 						role: {
 							include: {
@@ -75,7 +75,7 @@ export async function login(formState: FormState<User>, formData: FormData) {
 				message: "Invalid password",
 			};
 		}
-		const roles = user.role.map(({ role: { name, permissions } }) => ({
+		const roles = user.roles.map(({ role: { name, permissions } }) => ({
 			name,
 			permissions: permissions.map(({ permission: { name } }) => name),
 		}));
@@ -151,7 +151,7 @@ export async function signup(formState: FormState<User>, formData: FormData) {
 				email,
 				password: hashPassword,
 				mobile,
-				role: {
+				roles: {
 					create: { roleId: role?.id! },
 				},
 			},

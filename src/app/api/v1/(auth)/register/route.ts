@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 					email,
 					password: hashPassword,
 					mobile,
-					role: { create: { roleId: existRole.id } },
+					roles: { create: { roleId: existRole.id } },
 				},
 			});
 

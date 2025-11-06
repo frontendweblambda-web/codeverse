@@ -1,33 +1,34 @@
 model User {
-  id                  String       @id @default(cuid()) @map("user_id")
+  id                  String         @id @default(cuid()) @map("user_id")
   name                String
-  email               String       @unique
+  email               String         @unique
   password            String
-  mobile              String?      @unique
-  active              Boolean      @default(true)
-  avatar              String       @default("")
-  isNewUser           Boolean      @default(true) @map("is_new_user")
-  failedLoginAttempts Int          @default(0) @map("failed_login_attempts")
-  lastLogin           DateTime?    @map("last_login") @db.Timestamp(6)
-  authProvider        AuthProvider @default(CREDENTIAL) @map("auth_provider")
-  authProviderId      String?      @map("auth_provider_id")
-  lockoutUntil        DateTime?    @map("lockout_until")
+  mobile              String?        @unique
+  active              Boolean        @default(true)
+  avatar              String         @default("")
+  isNewUser           Boolean        @default(true) @map("is_new_user")
+  failedLoginAttempts Int            @default(0) @map("failed_login_attempts")
+  lastLogin           DateTime?      @map("last_login") @db.Timestamp(6)
+  authProvider        AuthProvider   @default(CREDENTIAL) @map("auth_provider")
+  authProviderId      String?        @map("auth_provider_id")
+  lockoutUntil        DateTime?      @map("lockout_until")
   // 🔹 1:1 User → Tenant (their own account)
   tenant              Tenant?
-  createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt           DateTime     @updatedAt @map("updated_at") @db.Timestamp(6)
+  createdAt           DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt           DateTime       @updatedAt @map("updated_at") @db.Timestamp(6)
   deletedAt           DateTime?
   profile             Profile?
   posts               Post[]
   comments            Comment[]
-  role                UserRole[]
+  roles               UserRole[]
   likes               Like[]
-  followings          Follow[]     @relation("user_following")
-  followers           Follow[]     @relation("user_followers")
+  followings          Follow[]       @relation("user_following")
+  followers           Follow[]       @relation("user_followers")
   bookmarks           Bookmark[]
   // Invitations: sent & received
-  invitationsSent     Invitation[] @relation("InvitedBy")
-  invitationsReceived Invitation[] @relation("InvitedUser")
+  invitationsSent     Invitation[]   @relation("InvitedBy")
+  invitationsReceived Invitation[]   @relation("InvitedUser")
+  refreshTokens       RefreshToken[]
 
   @@map("users")
 }

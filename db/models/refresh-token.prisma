@@ -1,0 +1,18 @@
+model RefreshToken {
+  id        String   @id @default(cuid()) @map("refresh_token_id")
+  tokenHash String   @map("token_hash") // SHA256 hash
+  expiresAt DateTime @map("expires_at")
+  deviceId  String?  @map("device_id") // Optional: link multiple tokens per device
+  userAgent String?  @map("user_agent") // Browser / platform info
+  ipAddress String?  @map("ip_address") // Useful for anomaly detection
+
+  revokedAt DateTime? // Mark manually revoked tokens
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_token")
+}

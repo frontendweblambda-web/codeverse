@@ -1,9 +1,11 @@
 import { NextRequest } from "next/server";
 
 import ApiResponse from "@/utils/api-response";
+import { hashToken } from "@/utils/hash-token";
 import { JwtService } from "@/utils/jwt-token";
 import { PasswordUtil } from "@/utils/password";
 
+import { appConfig } from "@/core/config";
 import { db } from "@/lib/prisma-client";
 import { errorHandler } from "@/middleware/handle-error";
 import { loginSchema } from "@/schema/auth";
@@ -23,10 +25,9 @@ export async function POST(req: NextRequest) {
 
 		const user = await db.user.findUnique({
 			where: { email },
-
 			include: {
 				tenant: true,
-				role: {
+				roles: {
 					include: {
 						role: {
 							include: {
@@ -47,8 +48,7 @@ export async function POST(req: NextRequest) {
 		if (!verified) {
 			throw new AuthError("Invalid password");
 		}
-
-		const roles = user.role.map(({ role: { name, id, permissions } }) => ({
+		const roles = user.roles.map(({ role: { name, id, permissions } }) => ({
 			name,
 			permissions: permissions.map(({ permission: { name } }) => name),
 		}));
@@ -62,6 +62,22 @@ export async function POST(req: NextRequest) {
 		const refreshToken = await JwtService.signRefreshToken({
 			email: user.email,
 			userId: email.id,
+		});
+
+		const hashRefreshToken = await hashToken(refreshToken);
+		const userAgent = req.headers.get("user-agent");
+		const ipAddress = req.headers.get("x-forwarded-for") || "unknown";
+
+		const now = Date.now();
+		await db.refreshToken.create({
+			data: {
+				userId: user.id,
+				tokenHash: hashRefreshToken,
+				createdAt: new Date(Date.now()),
+				ipAddress,
+				userAgent,
+				expiresAt: new Date(now + appConfig.refreshTokenTTL * 1000),
+			},
 		});
 
 		return ApiResponse({
