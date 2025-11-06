@@ -19,7 +19,10 @@ export default function SubmitForm({
   return (
     <button
       disabled={pending || loading || disabled}
-      className={clsx("py-2 text-white px-6 min-w-20 bg-slate-900 rounded-sm")}
+      className={clsx(
+        "py-2 text-white px-6 min-w-20 bg-slate-900 rounded-sm",
+        className
+      )}
       {...rest}
     >
       {children || btnLabel}

@@ -4,7 +4,7 @@ import { appConfig } from "@/src/core/config";
 import { session } from "@/src/core/session/session";
 import { User } from "@/src/generated/prisma/client";
 import { db } from "@/src/lib/prisma-client";
-import { loginSchema } from "@/src/schema/auth";
+import { loginSchema, registerSchema } from "@/src/schema/auth";
 import { FormState } from "@/src/types";
 import { ClientErrors, zodErrorFormat } from "@/src/utils/format-error";
 import { JwtService } from "@/src/utils/jwt-token";
@@ -108,7 +108,70 @@ export async function login(formState: FormState<User>, formData: FormData) {
  * @param formState
  * @param formData
  */
-export async function signup(formState: FormState<User>, formData: FormData) {}
+export async function signup(formState: FormState<User>, formData: FormData) {
+  try {
+    const body = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      password: formData.get("password"),
+      mobile: formData.get("mobile"),
+    };
+
+    const parsedData = registerSchema.safeParse(body);
+    if (!parsedData.success) {
+      return {
+        ...formState,
+        state: "error" as const,
+        success: false,
+        errors: zodErrorFormat(parsedData.error, "client") as ClientErrors,
+      } as FormState<User>;
+    }
+
+    const { name, mobile, email, password } = parsedData.data;
+    const user = await db.user.findUnique({
+      where: { email },
+    });
+    if (user) {
+      return {
+        ...formState,
+        state: "error" as const,
+        success: false,
+        message: "User already existed",
+      } as FormState<User>;
+    }
+
+    const hashPassword = await PasswordUtil.hash(password);
+    const newUser = await db.user.create({
+      data: {
+        name,
+        email,
+        password: hashPassword,
+        mobile,
+      },
+      omit: { password: true },
+      include: { tenant: true },
+    });
+
+    return {
+      ...formState,
+      state: "success" as const,
+      success: true,
+      message: "You have successfully created account",
+      data: {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+      },
+    } as FormState<User>;
+  } catch (error) {
+    return {
+      ...formState,
+      state: "error" as const,
+      success: false,
+      message: error instanceof Error ? error.message : "",
+    } as FormState<User>;
+  }
+}
 
 /**
  * refresh token

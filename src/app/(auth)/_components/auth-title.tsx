@@ -7,8 +7,8 @@ type AuthTitleProps = React.HtmlHTMLAttributes<HTMLDivElement> & {
   linkLabel?: string;
 };
 export default function AuthTitle({
-  title = "Login",
-  subtitle = "Welcome to codeverse",
+  title = "Login to your account",
+  subtitle = "Welcome to codeverseEnter your email below to login to your account",
   className,
   ...rest
 }: AuthTitleProps) {

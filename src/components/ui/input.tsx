@@ -15,7 +15,7 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
 export default function Input({
   label,
   error,
-  isPassword,
+  isPassword = false,
   startIcon,
   endIcon,
   type = "text",
@@ -29,7 +29,7 @@ export default function Input({
       {label && <FormLabel label={label} />}
       <div
         className={clsx(
-          "w-full rounded-md flex items-center px-3 relativerounded-md border  text-sm bg-transparent outline-none pr-9",
+          "w-full relative rounded-md flex items-center px-3 relativerounded-md border  text-sm bg-transparent outline-none pr-9",
           "border-gray-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
           error &&
             "border-rose-600 text-red-500 focus:border-rose-600 focus:ring-rose-600"

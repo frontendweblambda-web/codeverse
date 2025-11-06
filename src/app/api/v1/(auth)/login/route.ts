@@ -20,7 +20,23 @@ export async function POST(req: NextRequest) {
 
     const user = await db.user.findUnique({
       where: { email },
-      include: { tenant: true },
+
+      include: {
+        tenant: true,
+        role: {
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
     if (!user) throw new NotFoundError("User not found");
 
@@ -29,13 +45,18 @@ export async function POST(req: NextRequest) {
       throw new AuthError("Invalid password");
     }
 
-    const accessToken = await JwtService.sign({
+    const roles = user.role.map(({ role: { name, id, permissions } }) => ({
+      name,
+      permissions: permissions.map(({ permission: { name } }) => name),
+    }));
+    const accessToken = await JwtService.signAccessToken({
       email: user.email,
       userId: user.id,
       tenantId: user.tenant?.id!,
+      roles,
     });
 
-    const refreshToken = await JwtService.refresh({
+    const refreshToken = await JwtService.signRefreshToken({
       email: user.email,
       userId: email.id,
     });
@@ -49,7 +70,7 @@ export async function POST(req: NextRequest) {
           email: user.email,
           name: user.name,
           isNewUser: user.isNewUser,
-          tenant: user.tenant,
+          roles: roles,
         },
         tokens: {
           accessToken,

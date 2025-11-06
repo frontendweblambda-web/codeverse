@@ -22,7 +22,6 @@ export default async function auth(req: NextRequest) {
       throw new AuthError("Token expired or invalid");
     }
 
-    console.log("TOken-------", token);
     return NextResponse.next();
   } catch (error) {
     return errorHandler(error);

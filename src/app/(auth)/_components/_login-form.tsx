@@ -25,10 +25,16 @@ export default function LoginForm() {
   }, [state, router]);
 
   return (
-    <Form action={formAction} className="gap-3 flex flex-col">
+    <Form action={formAction} className="gap-3 flex flex-col py-6">
       {pending && <p>Please wait...</p>}
       <Input label="Email" placeholder="Enter email" name="email" />
-      <Input label="Password" placeholder="**********" name="password" />
+      <Input
+        type="password"
+        label="Password"
+        placeholder="**********"
+        name="password"
+        isPassword
+      />
       <div className="flex justify-between">
         <Checkbox name="remember" label="Remember me" />
         <Link
