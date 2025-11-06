@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 /**
  * AdminLayout — the main admin dashboard layout.
  */
-export default async function AdminLayout({
+export default async function UserLayout({
   children,
 }: {
   children: ReactNode;

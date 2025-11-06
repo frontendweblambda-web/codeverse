@@ -1,14 +1,8 @@
 "use client";
-import {
-  createContext,
-  PropsWithChildren,
-  use,
-  useEffect,
-  useMemo,
-} from "react";
+import { createContext, PropsWithChildren, use, useMemo } from "react";
 import useConfirm, { ConfirmModal } from "../hooks/confirm";
 import { VerifiedToken } from "../utils/jwt-token";
-import AutoLogout from "../components/shared/auto-logout";
+import AutoLogout from "../components/shared/session-manager";
 
 type AppStateType = {
   confirm: ConfirmModal;

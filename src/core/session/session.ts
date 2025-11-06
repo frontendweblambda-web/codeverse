@@ -8,39 +8,67 @@ import { appConfig } from "../config";
  * @param payload
  */
 export const session = async (payload: Payload) => {
-  // Access token lifetime (15 minutes)
-  const accessTokenTTL = 15 * 60; // seconds
-  const token = await JwtService.signAccessToken({
-    ...payload,
-    expiresIn: "15m",
-  });
+  const accessToken = await JwtService.signAccessToken(payload); // expired in 15m
+  const refreshToken = await JwtService.signRefreshToken(payload); // expired in 7d
 
+  console.log("TOKEN", accessToken, refreshToken);
   const cookieStore = await cookies();
+
   // access token
   cookieStore.set({
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
+    ...appConfig.cookieSettings,
     name: appConfig.accessSessionKey,
-    value: token,
-    maxAge: accessTokenTTL,
+    value: accessToken,
+    maxAge: appConfig.accessTokenTTL,
   });
 
-  return token;
+  // refresh token
+  cookieStore.set({
+    ...appConfig.cookieSettings,
+    name: appConfig.refreshSessionKey,
+    value: refreshToken,
+    maxAge: appConfig.refreshTokenTTL,
+  });
+
+  console.log("Session generated!");
+  return { accessToken, refreshToken };
 };
 
+export const updateSession = async () => {
+  const cookieStore = await cookies();
+
+  const refreshToken = cookieStore.get(appConfig.refreshSessionKey)?.value;
+  if (!refreshToken) return null;
+
+  const verified = await JwtService.verifyRefreshToken(refreshToken!);
+  if (!verified.valid || verified.expired) return null;
+
+  // Issue new access token
+  await session({
+    roles: verified.payload?.roles,
+    tenantId: verified.payload?.tenantId!,
+    userId: verified.payload?.userId!,
+    email: verified.payload?.email!,
+  });
+
+  console.log("Update session call");
+};
 /**
  * Get user session
  * @returns
  */
 export const getSession = async () => {
   const cookieStore = await cookies();
-  const token = cookieStore.get(appConfig.accessSessionKey)?.value;
-  if (!token) return null;
+  const accessToken = cookieStore.get(appConfig.accessSessionKey)?.value;
+  if (!accessToken) {
+    // No access token, try refresh token
+    return await updateSession();
+  }
 
-  const verified = await JwtService.verifyAccessToken(token!);
-  if (!verified.valid || verified.expired) return null;
+  const verified = await JwtService.verifyAccessToken(accessToken);
+  if (!verified.valid || verified.expired) {
+    await updateSession(); // expired, refresh
+  }
 
   return verified;
 };

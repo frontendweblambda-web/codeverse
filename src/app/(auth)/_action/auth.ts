@@ -7,6 +7,7 @@ import { db } from "@/src/lib/prisma-client";
 import { loginSchema } from "@/src/schema/auth";
 import { FormState } from "@/src/types";
 import { ClientErrors, zodErrorFormat } from "@/src/utils/format-error";
+import { JwtService } from "@/src/utils/jwt-token";
 import { PasswordUtil } from "@/src/utils/password";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -52,7 +53,7 @@ export async function login(formState: FormState<User>, formData: FormData) {
         },
       },
     });
-    console.log("User", user);
+
     if (!user) {
       return {
         ...formState,
@@ -63,7 +64,7 @@ export async function login(formState: FormState<User>, formData: FormData) {
     }
 
     const verified = await PasswordUtil.compare(password, user.password);
-    console.log("V", verified);
+
     if (!verified) {
       return {
         ...formState,
@@ -76,14 +77,15 @@ export async function login(formState: FormState<User>, formData: FormData) {
       name,
       permissions: permissions.map(({ permission: { name } }) => name),
     }));
-    const s = await session({
+    console.log("User", user);
+
+    await session({
       roles: roles,
       tenantId: user.tenant?.id!,
       userId: user.id,
       email: user.email,
     });
 
-    console.log("user", user, roles, s);
     return {
       ...formState,
       data: user,
@@ -102,10 +104,44 @@ export async function login(formState: FormState<User>, formData: FormData) {
 }
 
 /**
+ * Signup user
+ * @param formState
+ * @param formData
+ */
+export async function signup(formState: FormState<User>, formData: FormData) {}
+
+/**
+ * refresh token
+ */
+export async function refreshToken() {
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get(appConfig.refreshSessionKey)?.value;
+  if (!refreshToken) {
+    await logout();
+  }
+
+  const verified = await JwtService.verifyRefreshToken(refreshToken!);
+  if (!verified.valid || verified.expired) {
+    await logout();
+  }
+
+  const newSession = await session({
+    roles: verified.payload?.roles,
+    tenantId: verified.payload?.tenantId!,
+    userId: verified.payload?.userId!,
+    email: verified.payload?.email!,
+  });
+
+  console.log("Refresht action call!");
+  return newSession.accessToken;
+}
+
+/**
  * Logout
  */
 export async function logout() {
   const cookieStore = await cookies();
   cookieStore.delete(appConfig.accessSessionKey);
+  cookieStore.delete(appConfig.refreshSessionKey);
   redirect("/login");
 }

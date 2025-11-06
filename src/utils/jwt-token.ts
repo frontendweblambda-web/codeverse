@@ -9,7 +9,7 @@ export interface Payload extends jose.JWTPayload {
   email: string;
   userId: string;
   tenantId: string;
-  expiresIn?: string;
+  expiresIn?: number;
   token_type?: "access" | "refresh";
   roles?: { name: string; permissions: string[] }[];
 }
@@ -29,16 +29,24 @@ export class JwtService {
    * Generate an access token (short-lived)
    */
   static async signAccessToken(payload: Payload): Promise<string> {
-    return await new jose.SignJWT({
-      ...payload,
-      token_type: "access",
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setIssuedAt()
-      .setIssuer(appConfig.issuer)
-      .setAudience(appConfig.audience)
-      .setExpirationTime(payload.expiresIn ?? "15m")
-      .sign(accessSecret);
+    try {
+      const now = Math.floor(Date.now() / 1000); // current time in seconds
+      // If payload.expiresIn is duration in seconds, calculate exact exp
+      const exp = now + appConfig.accessTokenTTL;
+      return await new jose.SignJWT({
+        ...payload,
+        token_type: "access",
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setIssuer(appConfig.issuer)
+        .setAudience(appConfig.audience)
+        .setExpirationTime(exp)
+        .sign(accessSecret);
+    } catch (error) {
+      console.log("signAccessToken", error);
+      throw error;
+    }
   }
 
   /**
@@ -47,16 +55,23 @@ export class JwtService {
   static async signRefreshToken(
     payload: Pick<Payload, "userId" | "email">
   ): Promise<string> {
-    return await new jose.SignJWT({
-      ...payload,
-      token_type: "refresh",
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setIssuedAt()
-      .setIssuer(appConfig.issuer)
-      .setAudience(appConfig.audienceRefresh)
-      .setExpirationTime("7d")
-      .sign(refreshSecret);
+    try {
+      const now = Math.floor(Date.now() / 1000); // current time in seconds
+      const exp = now + appConfig.refreshTokenTTL;
+      return await new jose.SignJWT({
+        ...payload,
+        token_type: "refresh",
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setIssuer(appConfig.issuer)
+        .setAudience(appConfig.audienceRefresh)
+        .setExpirationTime(exp)
+        .sign(refreshSecret);
+    } catch (error) {
+      console.log("signRefreshToken", error);
+      throw error;
+    }
   }
 
   /**

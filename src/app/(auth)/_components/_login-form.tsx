@@ -8,10 +8,12 @@ import Link from "next/link";
 import { useActionState, useEffect } from "react";
 import { login } from "../_action/auth";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   const [state, formAction, pending] = useActionState(login, undefined);
 
+  const router = useRouter();
   useEffect(() => {
     if (state?.state == "error") {
       toast.error(state.message);
@@ -20,9 +22,8 @@ export default function LoginForm() {
     if (state?.success) {
       toast.success(state.message);
     }
-  }, [state]);
+  }, [state, router]);
 
-  console.log("S", state);
   return (
     <Form action={formAction} className="gap-3 flex flex-col">
       {pending && <p>Please wait...</p>}

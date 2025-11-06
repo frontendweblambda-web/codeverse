@@ -8,14 +8,17 @@ export const appConfig = {
   audienceRefresh: "codeverse-refresh-client",
 
   // session name
+  beforeExpiration: 5 * 60,
+  refreshTokenTTL: 7 * 24 * 60 * 60, // 7 days in seconds
+  accessTokenTTL: 15 * 60, // 15 minutes in seconds
+  accessSessionKey: "access_token",
+  refreshSessionKey: "refresh_token",
   cookieSettings: {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
   },
-  accessSessionKey: "access_token",
-  refreshSessionKey: "refresh_token",
 
   // upload image
   maxImageSize: 1 * 1024 * 1024, // 1 MB
