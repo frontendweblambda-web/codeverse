@@ -1,12 +1,10 @@
-import { ZodIssue } from "zod/v3";
-
-type State = "idle" | "success" | "warning" | "danger";
+export type Status = "success" | "error";
 export type FormState<T> =
   | {
       data?: T;
       message?: string;
       success?: boolean;
-      state?: State;
-      errors?: Record<string, string>;
+      state?: "success" | "error";
+      errors?: Record<string, string> | undefined;
     }
   | undefined;

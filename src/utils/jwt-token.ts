@@ -1,5 +1,6 @@
 import * as jose from "jose";
 import { Role } from "../generated/prisma/client";
+import { appConfig } from "../core/config";
 
 const accessSecret = new TextEncoder().encode(process.env.JWT_SECRET!);
 const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET!);
@@ -8,59 +9,102 @@ export interface Payload extends jose.JWTPayload {
   email: string;
   userId: string;
   tenantId: string;
-  expiresIn?: number;
-  roles?: Role[];
+  expiresIn?: string;
+  token_type?: "access" | "refresh";
+  roles?: { name: string; permissions: string[] }[];
 }
+
+/**
+ * Safe decode result type.
+ */
+export type VerifiedToken = {
+  valid: boolean;
+  expired: boolean;
+  payload?: Payload;
+  error?: string;
+};
 
 export class JwtService {
   /**
    * Generate an access token (short-lived)
    */
-  static async sign(payload: Payload): Promise<string> {
-    return await new jose.SignJWT(payload)
+  static async signAccessToken(payload: Payload): Promise<string> {
+    return await new jose.SignJWT({
+      ...payload,
+      token_type: "access",
+    })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setIssuer("codeverse:issuer")
-      .setAudience("codeverse:user")
-      .setExpirationTime("15m")
+      .setIssuer(appConfig.issuer)
+      .setAudience(appConfig.audience)
+      .setExpirationTime(payload.expiresIn ?? "15m")
       .sign(accessSecret);
-  }
-
-  /**
-   * Verify an access token
-   */
-  static async verify(token: string): Promise<Payload> {
-    const { payload } = await jose.jwtVerify(token, accessSecret, {
-      issuer: "codeverse:issuer",
-      audience: "codeverse:user",
-    });
-    return payload as Payload;
   }
 
   /**
    * Generate a refresh token (long-lived)
    */
-  static async refresh(
+  static async signRefreshToken(
     payload: Pick<Payload, "userId" | "email">
   ): Promise<string> {
-    return await new jose.SignJWT(payload)
+    return await new jose.SignJWT({
+      ...payload,
+      token_type: "refresh",
+    })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setIssuer("codeverse:issuer")
-      .setAudience("codeverse:refresh")
+      .setIssuer(appConfig.issuer)
+      .setAudience(appConfig.audienceRefresh)
       .setExpirationTime("7d")
       .sign(refreshSecret);
   }
 
   /**
+   * Verify an access token
+   */
+  static async verifyAccessToken(token: string): Promise<VerifiedToken> {
+    try {
+      const { payload } = await jose.jwtVerify(token, accessSecret, {
+        issuer: appConfig.issuer,
+        audience: appConfig.audience,
+      });
+
+      if (payload.token_type !== "access") {
+        throw new Error("Invalid token type");
+      }
+
+      return { valid: true, expired: false, payload: payload as Payload };
+    } catch (error: any) {
+      return {
+        valid: false,
+        expired: error.code === "ERR_JWT_EXPIRED",
+        error: error.message,
+      };
+    }
+  }
+
+  /**
    * Verify a refresh token
    */
-  static async refreshVerify(token: string): Promise<Payload> {
-    const { payload } = await jose.jwtVerify(token, refreshSecret, {
-      issuer: "codeverse:issuer",
-      audience: "codeverse:refresh",
-    });
-    return payload as Payload;
+  static async verifyRefreshToken(token: string): Promise<VerifiedToken> {
+    try {
+      const { payload } = await jose.jwtVerify(token, refreshSecret, {
+        issuer: appConfig.issuer,
+        audience: appConfig.audienceRefresh,
+      });
+
+      if (payload.token_type !== "refresh") {
+        throw new Error("Invalid token type");
+      }
+
+      return { valid: true, expired: false, payload: payload as Payload };
+    } catch (error: any) {
+      return {
+        valid: false,
+        expired: error.code === "ERR_JWT_EXPIRED",
+        error: error.message,
+      };
+    }
   }
 
   /**

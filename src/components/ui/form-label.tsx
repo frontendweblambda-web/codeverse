@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-type FormLabelProps = React.LabelHTMLAttributes<HTMLLabelElement> & {
+export type FormLabelProps = React.LabelHTMLAttributes<HTMLLabelElement> & {
   label?: string;
 };
 export default function FormLabel({
@@ -9,7 +9,7 @@ export default function FormLabel({
   ...rest
 }: FormLabelProps) {
   return (
-    <label className={clsx("mb-2", className)} {...rest}>
+    <label className={clsx("mb-1 text-xs text-gray-600", className)} {...rest}>
       {label}
     </label>
   );

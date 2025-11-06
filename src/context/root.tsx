@@ -1,29 +1,46 @@
 "use client";
-import { createContext, PropsWithChildren, use, useMemo } from "react";
+import {
+  createContext,
+  PropsWithChildren,
+  use,
+  useEffect,
+  useMemo,
+} from "react";
 import useConfirm, { ConfirmModal } from "../hooks/confirm";
+import { VerifiedToken } from "../utils/jwt-token";
+import AutoLogout from "../components/shared/auto-logout";
 
 type AppStateType = {
   confirm: ConfirmModal;
   handleCancelConfirm: () => void;
   handleConfirm: (confirm: ConfirmModal) => void;
+  session?: VerifiedToken;
 };
 const AppContext = createContext<AppStateType | undefined>(undefined);
-type RootProviderProps = PropsWithChildren & {};
+type RootProviderProps = PropsWithChildren & {
+  session?: VerifiedToken;
+};
 
 /**
  * Root provider
  * @param param0
  * @returns
  */
-export default function AppProvider({ children }: RootProviderProps) {
+export default function AppProvider({ children, session }: RootProviderProps) {
   const { confirm, handleCancelConfirm, handleConfirm } = useConfirm();
 
   const value = useMemo(
-    () => ({ confirm, handleCancelConfirm, handleConfirm }),
-    [confirm, handleCancelConfirm, handleConfirm]
+    () => ({ confirm, handleCancelConfirm, handleConfirm, session }),
+    [confirm, handleCancelConfirm, handleConfirm, session]
   );
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider value={value}>
+      <AutoLogout />
+
+      {children}
+    </AppContext.Provider>
+  );
 }
 
 export function useAppState() {
