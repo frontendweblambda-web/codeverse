@@ -9,10 +9,10 @@ import { PasswordUtil } from "@/utils/password";
 
 import { appConfig } from "@/core/config";
 import { session } from "@/core/session/session";
-import { User } from "@/generated/prisma/client";
 import { db } from "@/lib/prisma-client";
 import { loginSchema, registerSchema } from "@/schema/auth";
 import { FormState } from "@/types";
+import { User } from "@prisma/client";
 
 /**
  * Login action

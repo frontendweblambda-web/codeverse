@@ -1,21 +1,20 @@
-import { PrismaClient } from "../generated/prisma/client";
-import { PasswordUtil } from "../utils/password";
+import { PrismaClient } from "@prisma/client";
 
 declare global {
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+	// eslint-disable-next-line no-var
+	var prisma: PrismaClient | undefined;
 }
 
 const globalForPrisma = global as unknown as {
-  prisma: PrismaClient;
+	prisma: PrismaClient;
 };
 
 export const db =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    errorFormat: "pretty",
-    log: ["info", "warn", "query", "error"],
-  });
+	globalForPrisma.prisma ||
+	new PrismaClient({
+		errorFormat: "pretty",
+		log: ["info", "warn", "query", "error"],
+	});
 
 // db.$extends({
 //   query: {

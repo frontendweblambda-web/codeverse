@@ -4,10 +4,10 @@ import ApiResponse from "@/utils/api-response";
 import { PasswordUtil } from "@/utils/password";
 import { slugify } from "@/utils/slug";
 
-import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/prisma-client";
 import { errorHandler } from "@/middleware/handle-error";
 import { registerSchema } from "@/schema/auth";
+import { Prisma } from "@prisma/client";
 
 import {
 	ConflictError,

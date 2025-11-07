@@ -7,13 +7,14 @@ const PUBLIC_ROUTES = [
 	"/login",
 	"/signup",
 	"/forgot-password",
+	"/api/v1/role",
 	"/api/v1/login",
 	"/api/v1/signup",
 	"/api/v1/forgot-password",
 	"/api/v1/health",
 ];
 
-const allowedOrigins = ["http://localhost:5173"];
+const allowedOrigins = process.env.ALLOWED_ORIGINS!.split(",");
 
 const corsHeaders = {
 	"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",

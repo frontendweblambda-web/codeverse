@@ -2,9 +2,9 @@
 
 import { zodErrorFormat } from "@/utils/format-error";
 
-import { Role } from "@/generated/prisma/client";
 import { roleSchema } from "@/schema/role";
 import { FormState } from "@/types";
+import { Role } from "@prisma/client";
 
 import { createRoleDB, findRoles } from "../_lib/role.db";
 

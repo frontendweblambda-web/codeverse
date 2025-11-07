@@ -2,8 +2,8 @@
 import { queryParams } from "@/utils/queryParams";
 import { slugify } from "@/utils/slug";
 
-import { Role } from "@/generated/prisma/client";
 import { db } from "@/lib/prisma-client";
+import { Role } from "@prisma/client";
 
 /**
  * Get roles
