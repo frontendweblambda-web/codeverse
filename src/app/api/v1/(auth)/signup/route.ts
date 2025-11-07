@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 			mobile?: string;
 			role?: string;
 		};
-		console.log("BODY", body);
+
 		const { email, password, name, mobile, role = "owner" } = body;
 		// validation
 		const parsedData = registerSchema.safeParse(body);
@@ -52,6 +52,22 @@ export async function POST(req: NextRequest) {
 					mobile,
 					roles: { create: { roleId: existRole.id } },
 				},
+				include: {
+					tenant: true,
+					roles: {
+						include: {
+							role: {
+								include: {
+									permissions: {
+										include: {
+											permission: true,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			});
 
 			const exitTenant = await tx.tenant.findFirst({
@@ -66,13 +82,22 @@ export async function POST(req: NextRequest) {
 					ownerId: user.id,
 				},
 			});
-
 			return user;
 		});
+		const roles = user.roles.map(({ role: { name, id, permissions } }) => ({
+			name,
+			permissions: permissions.map(({ permission: { name } }) => name),
+		}));
 
 		return ApiResponse(
 			{
-				data: user,
+				data: {
+					id: user.id,
+					email: user.email,
+					name: user.name,
+					isNewUser: user.isNewUser,
+					roles,
+				},
 				message: "User registered successfully!",
 			},
 			{ status: 201 },
