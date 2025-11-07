@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 			omit: { password: true },
 			include: {
 				tenant: true,
-				role: {
+				roles: {
 					include: {
 						role: {
 							include: { permissions: { include: { permission: true } } },
