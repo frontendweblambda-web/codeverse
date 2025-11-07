@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
 			name,
 			permissions: permissions.map(({ permission: { name } }) => name),
 		}));
+
 		const accessToken = await JwtService.signAccessToken({
 			email: user.email,
 			userId: user.id,
@@ -73,10 +74,10 @@ export async function POST(req: NextRequest) {
 			data: {
 				userId: user.id,
 				tokenHash: hashRefreshToken,
-				createdAt: new Date(Date.now()),
+				createdAt: new Date(now),
+				expiresAt: new Date(now + appConfig.refreshTokenTTL * 1000),
 				ipAddress,
 				userAgent,
-				expiresAt: new Date(now + appConfig.refreshTokenTTL * 1000),
 			},
 		});
 
@@ -84,6 +85,7 @@ export async function POST(req: NextRequest) {
 			success: true,
 			message: "Login successful",
 			data: {
+				expiresAt: now + appConfig.accessTokenTTL * 1000,
 				user: {
 					id: user.id,
 					email: user.email,
