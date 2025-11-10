@@ -31,6 +31,7 @@ export default async function Proxy(req: NextRequest) {
 	const origin = req.headers.get("origin") ?? "";
 	const isAllowedOrigin = allowedOrigins.includes(origin);
 
+	console.log("IS---", isAllowedOrigin, origin);
 	// Handle preflight OPTIONS requests for API calls
 	if (req.method === "OPTIONS") {
 		const headers: Record<string, string> = {

@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
 import { AuthError } from "@/app/api/_errors";
@@ -18,11 +19,12 @@ import { errorHandler } from "@/middleware/handle-error";
 export async function POST(req: NextRequest) {
 	try {
 		// 1️⃣ Get refresh token from client or cookie
+		const cookieStore = await cookies();
 		const { refreshToken } = (await req.json()) as { refreshToken?: string };
 		const token =
-			refreshToken || req.cookies.get(appConfig.refreshSessionKey)?.value;
-		if (!token) throw new AuthError("No refresh token found");
+			refreshToken || cookieStore.get(appConfig.refreshSessionKey)?.value;
 
+		if (!token) throw new AuthError("No refresh token found");
 		const oldTokenHash = await hashToken(token);
 
 		// 1️⃣ Check token in DB
@@ -65,6 +67,14 @@ export async function POST(req: NextRequest) {
 			userId: verified.payload?.userId!,
 			email: verified.payload?.email!,
 		});
+
+		cookieStore.set({
+			...appConfig.cookieSettings,
+			sameSite: "none",
+			secure: process.env.NODE_ENV === "production",
+			value: newRefreshToken,
+			name: appConfig.refreshSessionKey,
+		});
 		const newRefreshTokenHash = await hashToken(newRefreshToken);
 		const now = Date.now(); // current time in seconds
 		await db.refreshToken.create({
@@ -93,6 +103,7 @@ export async function POST(req: NextRequest) {
 			success: true,
 			message: "Token refreshed",
 			data: {
+				expiresAt: now + appConfig.accessTokenTTL * 1000,
 				tokens: {
 					accessToken,
 					refreshToken: newRefreshToken,

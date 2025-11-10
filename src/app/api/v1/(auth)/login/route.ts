@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
 import ApiResponse from "@/utils/api-response";
@@ -79,6 +80,15 @@ export async function POST(req: NextRequest) {
 				ipAddress,
 				userAgent,
 			},
+		});
+
+		const cookieStore = await cookies();
+		cookieStore.set({
+			...appConfig.cookieSettings,
+			sameSite: "none",
+			secure: process.env.NODE_ENV === "production",
+			value: refreshToken,
+			name: appConfig.refreshSessionKey,
 		});
 
 		return ApiResponse({
